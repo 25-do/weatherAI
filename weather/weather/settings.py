@@ -28,9 +28,11 @@ WEATHER_API_KEY = os.environ.get('WEATHER_API_KEY', 'your_api_key_here')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
-
-
+ALLOWED_HOSTS = [
+    "weatherai-t17l.onrender.com",
+    "localhost",
+    "127.0.0.1",
+]
 # Application definition
 
 INSTALLED_APPS = [
