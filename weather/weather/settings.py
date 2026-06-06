@@ -28,7 +28,7 @@ WEATHER_API_KEY = os.environ.get('WEATHER_API_KEY', 'your_api_key_here')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
