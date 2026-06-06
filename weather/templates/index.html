@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container" style="max-width: 900px;">
+    <header class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-dark">WeatherAI Dashboard</h1>
+        <p class="lead text-secondary mt-2">Your personal weather assistant</p>
+    </header>
+
+    {% if error %}
+    <div class="alert alert-danger mb-4" role="alert">
+        <strong>Error:</strong> {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- Input Form -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-4">
+            <form method="POST" action="{% url 'index' %}" class="row g-3">
+                {% csrf_token %}
+                <div class="col-md-12">
+                    <label for="api_key" class="form-label text-secondary fw-bold">API Key</label>
+                    <input type="text" class="form-control" name="api_key" id="api_key" value="{{ api_key|default:'' }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="lat" class="form-label text-secondary fw-bold">Latitude</label>
+                    <input type="number" step="any" class="form-control" name="lat" id="lat" value="{{ lat }}">
+                </div>
+                <div class="col-md-6">
+                    <label for="lon" class="form-label text-secondary fw-bold">Longitude</label>
+                    <input type="number" step="any" class="form-control" name="lon" id="lon" value="{{ lon }}">
+                </div>
+                <div class="col-12 mt-4">
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Get Weather</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Weather Card -->
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-body p-4">
+                    <h2 class="h4 fw-bold text-secondary mb-4">Current Weather</h2>
+                    {% if weather %}
+                    <div>
+                        <p class="fs-5 text-secondary mb-2">Location: <span class="fw-bold text-dark">{{ weather.location.lat }}, {{ weather.location.lon }} ({{ weather.location.country }})</span></p>
+                        <div class="d-flex align-items-center mb-3">
+                            {% if weather.current.icon %}
+                            <img src="{{ weather.current.icon }}" alt="Weather Icon" class="me-3" style="width: 64px; height: 64px;">
+                            {% endif %}
+                            <span class="display-6 fw-bold text-dark">{{ weather.current.temperature }}°C</span>
+                        </div>
+                        <p class="fs-5 text-secondary mb-2">Condition: <span class="fw-bold text-dark text-capitalize">{{ weather.current.condition_code }}</span></p>
+                        <p class="fs-5 text-secondary mb-2">Feels Like: <span class="fw-bold text-dark">{{ weather.current.feels_like }}°C</span></p>
+                        <p class="fs-5 text-secondary mb-2">Humidity: <span class="fw-bold text-dark">{{ weather.current.humidity }}%</span></p>
+                        <p class="fs-5 text-secondary mb-0">Wind: <span class="fw-bold text-dark">{{ weather.current.wind_speed }} km/h</span></p>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Weather data is currently unavailable.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Decision Tool Card -->
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100 border-0" x-data="{ showAdvice: false }">
+                <div class="card-body p-4">
+                    <h2 class="h4 fw-bold text-secondary mb-4">Should I Go Outside?</h2>
+                    
+                    <button @click="showAdvice = !showAdvice" class="btn btn-primary w-100 py-2 fw-bold d-flex align-items-center justify-content-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-chevron-down me-2" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                        </svg>
+                        Check Outdoor Conditions
+                    </button>
+
+                    <div x-show="showAdvice" x-transition class="mt-4 p-3 bg-light rounded">
+                        {% if advice %}
+                        <p class="fs-5 text-center fw-medium mb-0">
+                            {% if 'No' in advice %}
+                            <span class="text-danger">{{ advice }}</span>
+                            {% elif 'Hot' in advice %}
+                            <span class="text-warning">{{ advice }}</span>
+                            {% else %}
+                            <span class="text-success">{{ advice }}</span>
+                            {% endif %}
+                        </p>
+                        {% else %}
+                        <p class="text-muted text-center mb-0">Click the button to get advice.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if weather and weather.hourly %}
+    <!-- Hourly Forecast Card -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h2 class="h4 fw-bold text-secondary mb-4">Hourly Forecast</h2>
+                    <div class="d-flex overflow-auto pb-3" style="gap: 1.5rem;">
+                        {% for hour in weather.hourly %}
+                        <div class="text-center" style="min-width: 80px;">
+                            <p class="text-muted mb-1 small">{{ hour.time|slice:"11:16" }}</p>
+                            {% if hour.icon %}
+                            <img src="{{ hour.icon }}" alt="{{ hour.condition_code }}" style="width: 48px; height: 48px;">
+                            {% endif %}
+                            <p class="fw-bold mb-0">{{ hour.temperature }}°C</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
